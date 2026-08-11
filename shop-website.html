@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فروشگاه آنلاین | خرید آنلاین محصولات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Vazirmatn', sans-serif; }
+        .product-card { transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .cart-sidebar { transform: translateX(100%); transition: transform 0.3s ease; }
+        .cart-sidebar.open { transform: translateX(0); }
+        .ad-banner { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .ad-sidebar { background: linear-gradient(180deg, #f093fb 0%, #f5576c 100%); }
+        .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-shopping-bag text-white text-lg"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">فروشگاه من</h1>
+                </div>
+                <nav class="hidden md:flex items-center gap-6">
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition">صفحه اصلی</a>
+                    <a href="#products" class="text-gray-700 hover:text-blue-600 font-medium transition">محصولات</a>
+                    <a href="#ads" class="text-gray-700 hover:text-blue-600 font-medium transition">تخفیف‌ها</a>
+                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition">تماس با ما</a>
+                </nav>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleCart()" class="relative p-2 hover:bg-gray-100 rounded-full transition">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                        <span id="cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Banner with Ad -->
+    <section class="ad-banner text-white py-16 px-4">
+        <div class="container mx-auto text-center">
+            <span class="inline-block bg-white/20 backdrop-blur px-4 py-1 rounded-full text-sm mb-4">🔥 تبلیغ ویژه</span>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">تخفیف‌های ویژه تابستانه</h2>
+            <p class="text-xl mb-6 opacity-90">تا ۷۰٪ تخفیف روی محصولات منتخب | فرصت محدود!</p>
+            <button onclick="scrollToProducts()" class="bg-white text-purple-600 px-8 py-3 rounded-full font-bold hover:shadow-lg hover:scale-105 transition">مشاهده محصولات</button>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="py-8 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                <button onclick="filterProducts('all')" class="category-btn active bg-blue-600 text-white px-6 py-2 rounded-full whitespace-nowrap transition hover:shadow-md">همه</button>
+                <button onclick="filterProducts('electronics')" class="category-btn bg-gray-100 text-gray-700 px-6 py-2 rounded-full whitespace-nowrap transition hover:bg-blue-100 hover:text-blue-600">الکترونیک</button>
+                <button onclick="filterProducts('fashion')" class="category-btn bg-gray-100 text-gray-700 px-6 py-2 rounded-full whitespace-nowrap transition hover:bg-blue-100 hover:text-blue-600">مد و پوشاک</button>
+                <button onclick="filterProducts('home')" class="category-btn bg-gray-100 text-gray-700 px-6 py-2 rounded-full whitespace-nowrap transition hover:bg-blue-100 hover:text-blue-600">خانه و آشپزخانه</button>
+                <button onclick="filterProducts('sport')" class="category-btn bg-gray-100 text-gray-700 px-6 py-2 rounded-full whitespace-nowrap transition hover:bg-blue-100 hover:text-blue-600">ورزش</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Products Grid -->
+            <div class="flex-1">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">محصولات ویژه</h3>
+                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                        <i class="fas fa-sort"></i>
+                        <select onchange="sortProducts(this.value)" class="bg-white border rounded-lg px-3 py-1 outline-none">
+                            <option value="newest">جدیدترین</option>
+                            <option value="price-low">قیمت: کم به زیاد</option>
+                            <option value="price-high">قیمت: زیاد به کم</option>
+                            <option value="popular">محبوب‌ترین</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Products will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Sidebar Ads -->
+            <aside class="w-full lg:w-72 space-y-6">
+                <!-- Ad Box 1 -->
+                <div class="ad-sidebar rounded-2xl p-6 text-white text-center">
+                    <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs mb-3">تبلیغ</span>
+                    <h4 class="text-xl font-bold mb-2">برند برتر</h4>
+                    <p class="text-sm opacity-90 mb-4">محصولات با کیفیت با ضمانت اصالت</p>
+                    <button class="bg-white text-pink-600 px-4 py-2 rounded-full text-sm font-bold hover:shadow-lg transition">مشاهده</button>
+                </div>
+
+                <!-- Ad Box 2 -->
+                <div class="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-6 text-white text-center">
+                    <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs mb-3">تبلیغ</span>
+                    <h4 class="text-xl font-bold mb-2">فروش ویژه</h4>
+                    <p class="text-sm opacity-90 mb-4">فقط امروز: ۵۰٪ تخفیف</p>
+                    <div class="bg-white/20 rounded-lg p-2 text-2xl font-bold font-mono" id="countdown">02:45:30</div>
+                </div>
+
+                <!-- Best Sellers -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border">
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-fire text-orange-500"></i> پرفروش‌ترین‌ها
+                    </h4>
+                    <div id="best-sellers" class="space-y-4">
+                        <!-- Will be rendered -->
+                    </div>
+                </div>
+
+                <!-- Ad Box 3 -->
+                <div class="bg-gradient-to-br from-emerald-400 to-teal-600 rounded-2xl p-6 text-white text-center">
+                    <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-xs mb-3">تبلیغ</span>
+                    <h4 class="text-xl font-bold mb-2">عضویت ویژه</h4>
+                    <p class="text-sm opacity-90 mb-4">ارسال رایگان + تخفیف اضافی</p>
+                    <button class="bg-white text-teal-600 px-4 py-2 rounded-full text-sm font-bold hover:shadow-lg transition">عضویت</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Middle Ad Banner -->
+    <section id="ads" class="container mx-auto px-4 py-8">
+        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 md:p-12 text-white text-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20">
+                <div class="absolute top-0 left-0 w-64 h-64 bg-white rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3"></div>
+            </div>
+            <div class="relative z-10">
+                <span class="inline-block bg-white/20 backdrop-blur px-4 py-1 rounded-full text-sm mb-4">تبلیغ ویژه</span>
+                <h3 class="text-3xl md:text-4xl font-bold mb-4">مجموعه جدید پاییزه</h3>
+                <p class="text-lg mb-6 opacity-90">جدیدترین محصولات با بهترین قیمت‌ها</p>
+                <button class="bg-white text-purple-600 px-8 py-3 rounded-full font-bold hover:shadow-xl hover:scale-105 transition">مشاهده مجموعه</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-12 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-white text-sm"></i>
+                        </div>
+                        <h4 class="text-white font-bold text-lg">فروشگاه من</h4>
+                    </div>
+                    <p class="text-sm">بهترین محصولات با بهترین قیمت‌ها. ارسال سریع به سراسر کشور.</p>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-4">دسترسی سریع</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">صفحه اصلی</a></li>
+                        <li><a href="#" class="hover:text-white transition">محصولات</a></li>
+                        <li><a href="#" class="hover:text-white transition">درباره ما</a></li>
+                        <li><a href="#" class="hover:text-white transition">تماس با ما</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-4">خدمات مشتریان</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">پیگیری سفارش</a></li>
+                        <li><a href="#" class="hover:text-white transition">شرایط بازگشت</a></li>
+                        <li><a href="#" class="hover:text-white transition">راهنمای خرید</a></li>
+                        <li><a href="#" class="hover:text-white transition">سوالات متداول</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-white font-bold mb-4">ارتباط با ما</h5>
+                    <div class="space-y-2 text-sm">
+                        <p><i class="fas fa-phone ml-2"></i> ۰۲۱-۱۲۳۴۵۶۷۸</p>
+                        <p><i class="fas fa-envelope ml-2"></i> info@shop.com</p>
+                        <div class="flex gap-3 mt-4">
+                            <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-400 transition"><i class="fab fa-telegram"></i></a>
+                            <a href="#" class="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition"><i class="fab fa-whatsapp"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
+                <p>تمامی حقوق محفوظ است © ۱۴۰۵</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/50 z-50 hidden"></div>
+    <div id="cart-sidebar" class="cart-sidebar fixed top-0 right-0 h-full w-full sm:w-96 bg-white z-50 shadow-2xl flex flex-col">
+        <div class="p-4 border-b flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-shopping-cart ml-2"></i>سبد خرید</h3>
+            <button onclick="toggleCart()" class="w-8 h-8 hover:bg-gray-100 rounded-full flex items-center justify-center transition">
+                <i class="fas fa-times text-gray-500"></i>
+            </button>
+        </div>
+        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="text-center text-gray-400 py-12">
+                <i class="fas fa-shopping-basket text-5xl mb-4"></i>
+                <p>سبد خرید شما خالی است</p>
+            </div>
+        </div>
+        <div class="p-4 border-t bg-gray-50">
+            <div class="flex justify-between mb-2 text-sm">
+                <span class="text-gray-600">جمع کل:</span>
+                <span id="cart-total" class="font-bold text-gray-800">۰ تومان</span>
+            </div>
+            <div class="flex justify-between mb-4 text-sm">
+                <span class="text-gray-600">هزینه ارسال:</span>
+                <span class="text-green-600 font-bold">رایگان</span>
+            </div>
+            <div class="flex justify-between mb-4 text-lg font-bold">
+                <span>قابل پرداخت:</span>
+                <span id="cart-final" class="text-blue-600">۰ تومان</span>
+            </div>
+            <button onclick="checkout()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-bold hover:shadow-lg transition">ثبت سفارش</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 left-4 z-50 space-y-2"></div>
+
+    <script>
+        // Products Data
+        const products = [
+            { id: 1, name: "هدفون بی‌سیم Pro", category: "electronics", price: 2850000, oldPrice: 3500000, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop", rating: 4.8, sales: 234 },
+            { id: 2, name: "ساعت هوشمند Ultra", category: "electronics", price: 4200000, oldPrice: 5500000, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop", rating: 4.6, sales: 189 },
+            { id: 3, name: "کتانی ورزشی Nike", category: "sport", price: 1950000, oldPrice: 2400000, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop", rating: 4.9, sales: 567 },
+            { id: 4, name: "کیف چرم دست‌دوز", category: "fashion", price: 1200000, oldPrice: 1500000, image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=400&fit=crop", rating: 4.5, sales: 123 },
+            { id: 5, name: "قهوه‌ساز اتوماتیک", category: "home", price: 3500000, oldPrice: 4200000, image: "https://images.unsplash.com/photo-1517914309750-4d5db9e1045e?w=400&h=400&fit=crop", rating: 4.7, sales: 89 },
+            { id: 6, name: "عینک آفتابی RayBan", category: "fashion", price: 1800000, oldPrice: 2200000, image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop", rating: 4.4, sales: 345 },
+            { id: 7, name: "لپ‌تاپ گیمینگ", category: "electronics", price: 28500000, oldPrice: 32000000, image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=400&fit=crop", rating: 4.8, sales: 67 },
+            { id: 8, name: "دumbbell ست ۲۰ کیلویی", category: "sport", price: 950000, oldPrice: 1200000, image: "https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?w=400&h=400&fit=crop", rating: 4.6, sales: 234 },
+            { id: 9, name: "چراغ مطالعه LED", category: "home", price: 450000, oldPrice: 600000, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&h=400&fit=crop", rating: 4.3, sales: 456 },
+            { id: 10, name: "پیراهن رسمی مردانه", category: "fashion", price: 680000, oldPrice: 850000, image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop", rating: 4.5, sales: 312 },
+            { id: 11, name: "اسپیکر بلوتوثی", category: "electronics", price: 890000, oldPrice: 1100000, image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop", rating: 4.4, sales: 178 },
+            { id: 12, name: "ست ظروف سرامیکی", category: "home", price: 1500000, oldPrice: 1900000, image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=400&fit=crop", rating: 4.7, sales: 98 },
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let currentFilter = 'all';
+
+        function formatPrice(price) {
+            return price.toLocaleString('fa-IR') + ' تومان';
+        }
+
+        function renderProducts(filter = 'all') {
+            const grid = document.getElementById('products-grid');
+            const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <div class="relative">
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-56 object-cover">
+                        ${p.oldPrice > p.price ? `<span class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">${Math.round((1 - p.price/p.oldPrice)*100)}٪ تخفیف</span>` : ''}
+                        <button onclick="addToCart(${p.id})" class="absolute bottom-3 left-3 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center gap-1 mb-2">
+                            <i class="fas fa-star text-amber-400 text-xs"></i>
+                            <span class="text-xs text-gray-500">${p.rating} (${p.sales} فروش)</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 mb-2 line-clamp-1">${p.name}</h4>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-blue-600 font-bold text-lg">${formatPrice(p.price)}</span>
+                                ${p.oldPrice > p.price ? `<span class="text-gray-400 text-sm line-through mr-2">${formatPrice(p.oldPrice)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBestSellers() {
+            const container = document.getElementById('best-sellers');
+            const best = [...products].sort((a,b) => b.sales - a.sales).slice(0, 4);
+            container.innerHTML = best.map((p, i) => `
+                <div class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition cursor-pointer" onclick="addToCart(${p.id})">
+                    <span class="w-6 h-6 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-xs font-bold">${i+1}</span>
+                    <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover">
+                    <div class="flex-1 min-w-0">
+                        <h5 class="text-sm font-bold text-gray-800 truncate">${p.name}</h5>
+                        <span class="text-xs text-blue-600 font-bold">${formatPrice(p.price)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            saveCart();
+            updateCartUI();
+            showToast(`"${product.name}" به سبد خرید اضافه شد`);
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+            updateCartUI();
+        }
+
+        function updateQty(productId, delta) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) removeFromCart(productId);
+                else { saveCart(); updateCartUI(); }
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cart-count').textContent = count;
+
+            const container = document.getElementById('cart-items');
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-shopping-basket text-5xl mb-4"></i>
+                        <p>سبد خرید شما خالی است</p>
+                    </div>`;
+            } else {
+                container.innerHTML = cart.map(item => `
+                    <div class="flex gap-3 bg-gray-50 p-3 rounded-xl">
+                        <img src="${item.image}" class="w-16 h-16 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <h5 class="text-sm font-bold text-gray-800 line-clamp-1">${item.name}</h5>
+                            <span class="text-xs text-blue-600 font-bold">${formatPrice(item.price)}</span>
+                            <div class="flex items-center gap-2 mt-2">
+                                <button onclick="updateQty(${item.id}, -1)" class="w-6 h-6 bg-white rounded border flex items-center justify-center text-xs hover:bg-gray-100">-</button>
+                                <span class="text-sm font-bold w-4 text-center">${item.qty}</span>
+                                <button onclick="updateQty(${item.id}, 1)" class="w-6 h-6 bg-white rounded border flex items-center justify-center text-xs hover:bg-gray-100">+</button>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="text-red-400 hover:text-red-600 self-start">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            document.getElementById('cart-total').textContent = formatPrice(total);
+            document.getElementById('cart-final').textContent = formatPrice(total);
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        function filterProducts(category) {
+            currentFilter = category;
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            event.target.classList.remove('bg-gray-100', 'text-gray-700');
+            event.target.classList.add('bg-blue-600', 'text-white');
+            renderProducts(category);
+        }
+
+        function sortProducts(sortType) {
+            let sorted = [...products];
+            if (currentFilter !== 'all') sorted = sorted.filter(p => p.category === currentFilter);
+
+            switch(sortType) {
+                case 'price-low': sorted.sort((a,b) => a.price - b.price); break;
+                case 'price-high': sorted.sort((a,b) => b.price - a.price); break;
+                case 'popular': sorted.sort((a,b) => b.sales - a.sales); break;
+                default: sorted.sort((a,b) => b.id - a.id);
+            }
+
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = sorted.map(p => `
+                <div class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                    <div class="relative">
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-56 object-cover">
+                        ${p.oldPrice > p.price ? `<span class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">${Math.round((1 - p.price/p.oldPrice)*100)}٪ تخفیف</span>` : ''}
+                        <button onclick="addToCart(${p.id})" class="absolute bottom-3 left-3 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center gap-1 mb-2">
+                            <i class="fas fa-star text-amber-400 text-xs"></i>
+                            <span class="text-xs text-gray-500">${p.rating} (${p.sales} فروش)</span>
+                        </div>
+                        <h4 class="font-bold text-gray-800 mb-2 line-clamp-1">${p.name}</h4>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-blue-600 font-bold text-lg">${formatPrice(p.price)}</span>
+                                ${p.oldPrice > p.price ? `<span class="text-gray-400 text-sm line-through mr-2">${formatPrice(p.oldPrice)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast bg-gray-800 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3';
+            toast.innerHTML = `<i class="fas fa-check-circle text-green-400"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                showToast('سبد خرید شما خالی است!');
+                return;
+            }
+            showToast('در حال انتقال به درگاه پرداخت...');
+        }
+
+        function scrollToProducts() {
+            document.getElementById('products-grid').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Countdown Timer
+        function updateCountdown() {
+            const now = new Date();
+            const end = new Date();
+            end.setHours(23, 59, 59);
+            const diff = end - now;
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('countdown').textContent = 
+                `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        // Init
+        renderProducts();
+        renderBestSellers();
+        updateCartUI();
+    </script>
+</body>
+</html>
